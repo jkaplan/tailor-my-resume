@@ -1,0 +1,23 @@
+<% content_for :title, "Edit Master Resume — Tailor My Resume" %>
+
+<h1>Master Resume</h1>
+
+<section class="panel">
+  <h2>Import from PDF</h2>
+  <p class="hint">
+    Uploads the PDF and extracts its text into the field below. Column-heavy
+    resumes often extract messily — review and clean up the text before saving.
+  </p>
+  <%= form_with url: import_master_resume_path, method: :post, multipart: true, class: "inline-form" do |f| %>
+    <%= file_field_tag :file, accept: "application/pdf", required: true %>
+    <%= submit_tag "Import PDF" %>
+  <% end %>
+</section>
+
+<section class="panel">
+  <h2>Content (Markdown)</h2>
+  <%= form_with model: @master_resume, url: master_resume_path, method: :patch, class: "form" do |f| %>
+    <%= f.text_area :content, rows: 30, class: "code-textarea" %>
+    <%= f.submit "Save", class: "button" %>
+  <% end %>
+</section>

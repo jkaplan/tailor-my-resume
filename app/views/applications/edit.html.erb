@@ -1,0 +1,9 @@
+<% content_for :title, "Edit #{@application.company} — Tailor My Resume" %>
+
+<h1>Edit Application</h1>
+
+<%= render "form", application: @application %>
+
+<%= button_to "Delete Application", @application, method: :delete,
+      class: "button button-danger",
+      data: { turbo_confirm: "Delete this application and all its contacts, notes, and tailored resumes?" } %>

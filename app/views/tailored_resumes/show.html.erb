@@ -1,0 +1,29 @@
+<% content_for :title, "Tailored Resume — #{@application.company}" %>
+
+<div class="page-header">
+  <h1>Tailored resume for <%= @application.role_title %> at <%= @application.company %></h1>
+  <div>
+    <%= link_to "Back to application", @application, class: "button" %>
+    <%= link_to "Print", print_application_tailored_resume_path(@application, @tailored_resume), class: "button", target: "_blank" %>
+  </div>
+</div>
+
+<div class="tailored-resume-layout">
+  <section class="panel">
+    <h2>Resume (Markdown)</h2>
+    <%= form_with model: [ @application, @tailored_resume ], class: "form" do |f| %>
+      <%= f.text_area :content, rows: 30, class: "code-textarea" %>
+      <%= f.submit "Save Changes", class: "button" %>
+    <% end %>
+  </section>
+
+  <section class="panel">
+    <h2>Preview</h2>
+    <div class="prose resume-content"><%= markdown(@tailored_resume.content) %></div>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Rationale</h2>
+  <div class="prose"><%= markdown(@tailored_resume.rationale) %></div>
+</section>

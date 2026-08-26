@@ -1,0 +1,48 @@
+<% content_for :title, "Dashboard — Tailor My Resume" %>
+
+<div class="page-header">
+  <h1>Applications</h1>
+  <%= link_to "New Application", new_application_path, class: "button" %>
+</div>
+
+<div class="filters">
+  <%= link_to "All", applications_path, class: params[:status].blank? ? "active" : "" %>
+  <% Application.statuses.each_key do |status| %>
+    <%= link_to status.titleize, applications_path(status: status), class: params[:status] == status ? "active" : "" %>
+  <% end %>
+</div>
+
+<% if @applications.empty? %>
+  <p class="empty-state">No applications yet. <%= link_to "Add your first one", new_application_path %>.</p>
+<% else %>
+  <table class="applications-table">
+    <thead>
+      <tr>
+        <th>Company</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Applied</th>
+        <th>Follow up</th>
+        <th>Primary contact</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @applications.each do |application| %>
+        <tr>
+          <td><%= link_to application.company, application %></td>
+          <td><%= application.role_title %></td>
+          <td><%= status_badge(application.status) %></td>
+          <td><%= application.applied_date&.strftime("%b %-d, %Y") %></td>
+          <td class="<%= "overdue" if application.follow_up_overdue? %>">
+            <%= application.follow_up_date&.strftime("%b %-d, %Y") %>
+          </td>
+          <td>
+            <% if (contact = application.contacts.first) %>
+              <%= contact.name %><% if contact.email.present? %> — <%= mail_to contact.email %><% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

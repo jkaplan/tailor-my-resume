@@ -1,0 +1,93 @@
+<% content_for :title, "#{@application.company} — Tailor My Resume" %>
+
+<div class="page-header">
+  <div>
+    <h1><%= @application.role_title %> at <%= @application.company %></h1>
+    <%= status_badge(@application.status) %>
+    <% if @application.job_url.present? %>
+      — <%= link_to "job posting", @application.job_url, target: "_blank", rel: "noopener" %>
+    <% end %>
+  </div>
+  <%= link_to "Edit", edit_application_path(@application), class: "button" %>
+</div>
+
+<section class="panel">
+  <h2>Status</h2>
+  <%= form_with model: @application, method: :patch, class: "inline-form" do |f| %>
+    <%= f.select :status, Application.statuses.keys.map { |s| [ s.titleize, s ] }, {}, onchange: "this.form.requestSubmit()" %>
+  <% end %>
+  <%= form_with model: @application, method: :patch, class: "inline-form" do |f| %>
+    <%= f.label :follow_up_date, "Follow up on" %>
+    <%= f.date_field :follow_up_date %>
+    <%= f.submit "Update" %>
+  <% end %>
+</section>
+
+<section class="panel">
+  <h2>Job description</h2>
+  <details>
+    <summary>Show full description</summary>
+    <div class="prose"><%= simple_format(@application.job_description) %></div>
+  </details>
+</section>
+
+<section class="panel">
+  <h2>Tailored resume</h2>
+
+  <%= button_to "Tailor Resume", application_tailored_resumes_path(@application), class: "button" %>
+
+  <% if @tailored_resume %>
+    <p>
+      Latest version: <%= link_to "view / edit", application_tailored_resume_path(@application, @tailored_resume) %>
+      · <%= link_to "print", print_application_tailored_resume_path(@application, @tailored_resume), target: "_blank" %>
+    </p>
+  <% else %>
+    <p class="empty-state">No tailored resume yet.</p>
+  <% end %>
+</section>
+
+<section class="panel">
+  <h2>Contacts</h2>
+
+  <% if @contacts.any? %>
+    <ul class="contacts-list">
+      <% @contacts.each do |contact| %>
+        <li>
+          <strong><%= contact.name %></strong>
+          <% if contact.role.present? %>(<%= contact.role %>)<% end %>
+          <% if contact.email.present? %> · <%= mail_to contact.email %><% end %>
+          <% if contact.phone.present? %> · <%= link_to contact.phone, "tel:#{contact.phone}" %><% end %>
+          <%= button_to "Remove", application_contact_path(@application, contact), method: :delete,
+                class: "link-button", data: { turbo_confirm: "Remove this contact?" } %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%= form_with model: [ @application, @new_contact ], class: "inline-form" do |f| %>
+    <%= f.text_field :name, placeholder: "Name" %>
+    <%= f.text_field :role, placeholder: "Role (recruiter, hiring manager…)" %>
+    <%= f.text_field :email, placeholder: "Email" %>
+    <%= f.text_field :phone, placeholder: "Phone" %>
+    <%= f.submit "Add Contact" %>
+  <% end %>
+</section>
+
+<section class="panel">
+  <h2>Activity</h2>
+
+  <%= form_with url: application_activity_logs_path(@application), class: "inline-form" do |f| %>
+    <%= f.text_field "activity_log[body]", placeholder: "Add a note…" %>
+    <%= f.submit "Add Note" %>
+  <% end %>
+
+  <ul class="activity-list">
+    <% @activity_logs.each do |activity| %>
+      <li>
+        <span class="activity-time"><%= activity.created_at.strftime("%b %-d, %Y %-I:%M%P") %></span>
+        <span class="activity-type"><%= activity.activity_type.titleize %></span>
+        — <%= activity.body %>
+      </li>
+    <% end %>
+  </ul>
+</section>

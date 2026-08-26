@@ -1,0 +1,52 @@
+<%= form_with model: application, class: "form" do |f| %>
+  <% if application.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% application.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :company %>
+    <%= f.text_field :company %>
+  </div>
+
+  <div class="field">
+    <%= f.label :role_title, "Role" %>
+    <%= f.text_field :role_title %>
+  </div>
+
+  <div class="field">
+    <%= f.label :job_url, "Job posting URL" %>
+    <%= f.text_field :job_url %>
+  </div>
+
+  <div class="field">
+    <%= f.label :job_description %>
+    <%= f.text_area :job_description, rows: 12 %>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :applied_date %>
+      <%= f.date_field :applied_date %>
+    </div>
+
+    <div class="field">
+      <%= f.label :follow_up_date %>
+      <%= f.date_field :follow_up_date %>
+    </div>
+  </div>
+
+  <% if application.persisted? %>
+    <div class="field">
+      <%= f.label :status %>
+      <%= f.select :status, Application.statuses.keys.map { |s| [ s.titleize, s ] } %>
+    </div>
+  <% end %>
+
+  <%= f.submit application.persisted? ? "Save" : "Add Application", class: "button" %>
+<% end %>

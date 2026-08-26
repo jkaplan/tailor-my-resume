@@ -1,0 +1,5 @@
+<% content_for :title, "#{@application.company} Resume" %>
+
+<article class="resume-print">
+  <%= markdown(@tailored_resume.content) %>
+</article>

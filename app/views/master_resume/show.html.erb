@@ -1,0 +1,16 @@
+<% content_for :title, "Master Resume — Tailor My Resume" %>
+
+<div class="page-header">
+  <h1>Master Resume</h1>
+  <%= link_to "Edit", edit_master_resume_path, class: "button" %>
+</div>
+
+<% if @master_resume.source_pdf.attached? %>
+  <p><%= link_to "Originally imported PDF", rails_blob_path(@master_resume.source_pdf, disposition: "attachment") %></p>
+<% end %>
+
+<% if @master_resume.content.present? %>
+  <div class="prose resume-content"><%= markdown(@master_resume.content) %></div>
+<% else %>
+  <p class="empty-state">No master resume yet. <%= link_to "Add one", edit_master_resume_path %>.</p>
+<% end %>
