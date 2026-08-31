@@ -3,10 +3,12 @@ class TailoredResumesController < ApplicationController
   before_action :set_tailored_resume, only: [ :show, :update, :print ]
 
   def create
-    result = Tailoring::GenerateResume.new(@application).call
+    mode = Tailoring::GenerateResume::MODES.include?(params[:mode]) ? params[:mode] : "ats"
+    result = Tailoring::GenerateResume.new(@application, mode: mode).call
     @tailored_resume = @application.tailored_resumes.create!(
       content: result.content,
-      rationale: result.rationale
+      rationale: result.rationale,
+      mode: mode
     )
     redirect_to application_tailored_resume_path(@application, @tailored_resume),
       notice: "Tailored resume generated."

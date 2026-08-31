@@ -34,11 +34,21 @@
 <section class="panel">
   <h2>Tailored resume</h2>
 
-  <%= button_to "Tailor Resume", application_tailored_resumes_path(@application), class: "button" %>
+  <%= form_with url: application_tailored_resumes_path(@application), class: "form" do %>
+    <div class="field">
+      <%= label_tag :mode, "Style" %>
+      <%= select_tag :mode, options_for_select([
+        [ "Optimize for ATS screening", "ats" ],
+        [ "Optimize for a human reader", "human" ]
+      ], "ats") %>
+    </div>
+    <%= submit_tag "Tailor Resume", class: "button" %>
+  <% end %>
 
   <% if @tailored_resume %>
     <p>
-      Latest version: <%= link_to "view / edit", application_tailored_resume_path(@application, @tailored_resume) %>
+      Latest version (<%= @tailored_resume.mode == "human" ? "human-focused" : "ATS-optimized" %>):
+      <%= link_to "view / edit", application_tailored_resume_path(@application, @tailored_resume) %>
       · <%= link_to "print", print_application_tailored_resume_path(@application, @tailored_resume), target: "_blank" %>
     </p>
   <% else %>

@@ -2,7 +2,9 @@ module Tailoring
   class GenerateResume
     Result = Struct.new(:content, :rationale)
 
-    SYSTEM_PROMPT = <<~PROMPT.freeze
+    MODES = %w[ats human].freeze
+
+    BASE_PROMPT = <<~PROMPT
       You are a resume-tailoring assistant helping a real job seeker adapt their
       master resume for a specific job posting. Rules:
 
@@ -11,23 +13,53 @@ module Tailoring
         but not fabricate.
       - Write ATS-safe Markdown: plain headings and bullet lists, no tables, no
         multi-column layouts, no images.
-      - Mirror important terminology from the job description where the
-        candidate's real experience genuinely supports it (e.g. match "project
-        management" vs "program management" to whichever the posting uses, if
-        the candidate has done that work).
       - Keep it to roughly one page of content.
     PROMPT
 
-    def initialize(application, master_resume: MasterResume.current)
+    MODE_PROMPTS = {
+      "ats" => <<~PROMPT,
+        This resume will likely be screened by an Applicant Tracking System (ATS)
+        before any human sees it, so optimize for passing that automated screen:
+
+        - Mirror important terminology from the job description where the
+          candidate's real experience genuinely supports it (e.g. match "project
+          management" vs "program management" to whichever the posting uses, and
+          match an acronym to its spelled-out form or vice versa if that's what
+          the posting uses), so keyword-matching software recognizes the overlap.
+        - Naturally work in the job posting's key required skills and
+          qualifications wherever the candidate genuinely has them.
+        - Use conventional section headers (e.g. "Experience", "Education",
+          "Skills") since nonstandard headers can fail to parse correctly.
+      PROMPT
+      "human" => <<~PROMPT
+        This resume is likely to be read directly by a hiring manager or
+        recruiter rather than screened by automated keyword matching first, so
+        optimize for how it reads to a person:
+
+        - Write natural, compelling prose and bullet points that tell a coherent
+          story of impact, rather than mechanically mirroring job-description
+          keywords.
+        - Don't force-fit the job posting's exact terminology if it would read
+          awkwardly; use it only where it flows naturally from the candidate's
+          real experience.
+        - Emphasize the achievements most relevant and interesting to a human
+          reader making a quick judgment call.
+      PROMPT
+    }.freeze
+
+    def initialize(application, master_resume: MasterResume.current, mode: "ats")
+      raise ArgumentError, "invalid mode: #{mode}" unless MODES.include?(mode)
+
       @application = application
       @master_resume = master_resume
+      @mode = mode
     end
 
     def call
       response = client.messages.create(
         model: "claude-sonnet-5",
         max_tokens: 4096,
-        system: SYSTEM_PROMPT,
+        system: system_prompt,
         tools: [ tool_definition ],
         tool_choice: { type: "tool", name: "submit_tailored_resume" },
         messages: [ { role: "user", content: prompt } ]
@@ -43,10 +75,14 @@ module Tailoring
 
     private
 
-    attr_reader :application, :master_resume
+    attr_reader :application, :master_resume, :mode
 
     def client
       @client ||= Anthropic::Client.new
+    end
+
+    def system_prompt
+      BASE_PROMPT + "\n" + MODE_PROMPTS.fetch(mode)
     end
 
     def prompt
