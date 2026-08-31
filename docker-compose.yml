@@ -1,0 +1,26 @@
+# Joins an external `proxy-net` network so a reverse proxy can reach this
+# container by name. Create it with `docker network create proxy-net`, or
+# remove the networks blocks if you don't use a proxy.
+
+networks:
+  proxy-net:
+    external: true
+
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    # Naming a network opts out of the implicit `default`; both are listed so
+    # nothing that relied on the project-local network breaks.
+    networks:
+      - default
+      - proxy-net
+    environment:
+      RAILS_ENV: production
+      RAILS_SERVE_STATIC_FILES: "true"
+    env_file:
+      - .env
+    volumes:
+      - ./storage:/rails/storage
