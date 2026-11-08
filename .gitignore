@@ -34,3 +34,7 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+
+# Personal deployment notes, versioned separately in .private-git (run as git private).
+/DEPLOY.local.md
+/.private-git/
